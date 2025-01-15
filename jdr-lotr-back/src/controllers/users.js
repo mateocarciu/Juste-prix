@@ -88,7 +88,7 @@ export async function registerUser(userDatas, bcrypt) {
   const createdUser = await User.create(user);
 
   // Créer un lien de vérification
-  const verificationLink = `http://localhost:5173/verify/${createdUser.id}`;
+  const verificationLink = `${process.env.PORT}/verify/${createdUser.id}`;
 
   // Envoyer l'email de vérification
   await sendVerificationEmail(email, verificationLink);
