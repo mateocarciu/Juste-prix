@@ -110,7 +110,7 @@ const start = async () => {
       });
 
     // Écouter sur le port 3000
-    await app.listen({ port: process.env.PORT || 4000 });
+    await app.listen({ port: process.env.PORT || 4000, host: '0.0.0.0' });
 
     // Obtenir l'instance du serveur HTTP de Fastify
     const server = app.server;
