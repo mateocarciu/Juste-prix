@@ -11,7 +11,7 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/verify/${id}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/verify/${id}`, {
           method: 'GET',
         });
 

@@ -3,6 +3,7 @@ import {
   updateGame,
   getGameState,
   getOpenGames,
+  getFinishedGames
 } from "../controllers/games.js";
 
 export function gamesRoutes(app) {
@@ -41,4 +42,11 @@ export function gamesRoutes(app) {
       return await getOpenGames(reply);
     }
   );
+  app.post(
+    "/games/finished",
+    { preHandler: [app.authenticate] },
+    async (request, reply) => {
+      return await getFinishedGames(request.body.userId, reply);
+    }
+  )
 }

@@ -1,4 +1,5 @@
 import Game from "../models/games.js";
+import { Op } from "sequelize";
 
 export async function createGame(userId, reply) {
   if (!userId) {
@@ -108,6 +109,29 @@ export async function getOpenGames(reply) {
   } catch (error) {
     console.error(
       "Erreur lors de la récupération des parties ouvertes :",
+      error
+    );
+    return reply
+      .status(500)
+      .send({ error: "Erreur serveur lors de la récupération des parties." });
+  }
+}
+export async function getFinishedGames(userId, reply) {
+  try {
+    const games = await Game.findAll({
+      where: {
+        state: "finished",
+        [Op.or]: [
+          { creator: userId },
+          { player: userId }
+        ]
+      },
+    });
+
+    return reply.status(200).send(games); // 200 OK avec la liste des jeux terminés
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des parties terminées :",
       error
     );
     return reply

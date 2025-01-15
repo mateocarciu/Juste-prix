@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {  useParams, Link } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import io from "socket.io-client";
 import Confetti from "react-confetti";
@@ -27,7 +27,7 @@ const Game = () => {
   useEffect(() => {
     const fetchGameState = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/game/${gameId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/game/${gameId}`, {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
@@ -84,7 +84,7 @@ const Game = () => {
   }, [currentTurn, user.id, gameStarted, gameFinished]);
 
   const initSocket = () => {
-    const newSocket = io("http://localhost:3000", {
+    const newSocket = io(`${import.meta.env.VITE_API_URL}`, {
       query: { token: user.token },
     });
     setSocket(newSocket);
@@ -211,9 +211,9 @@ const Game = () => {
           <p className="text-xl text-gray-700 dark:text-gray-300 mb-6">
             Le vainqueur est : <span className="font-bold">{winner}</span>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Félicitations au gagnant ! 🎉
-          </p>
+          <Link to="/dashboard" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-8 rounded-full shadow-lg hover:from-blue-600 hover:to-purple-600 hover:shadow-xl transition duration-300 mt-6">
+          Dashboard
+          </Link>
         </div>
       ) : !gameStarted ? (
         <div className="text-center">
@@ -263,8 +263,14 @@ const Game = () => {
                 className="h-64 w-full object-cover rounded-md shadow-md"
               />
               <p className="text-xl font-semibold mt-2 text-gray-700 dark:text-gray-300">
-                {selectedObject.name} {selectedObject.price}
+                {selectedObject.name} 
               </p>
+              <button
+                onClick={() => alert(`Le prix réel est : ${selectedObject.price} €`)}
+                className="mt-4 bg-red-500 text-white py-2 px-4 rounded-full shadow-md hover:bg-red-600 transition duration-300"
+              >
+               Je veux voir les confettis (voir le prix réel)
+              </button>
             </div>
           )}
 
