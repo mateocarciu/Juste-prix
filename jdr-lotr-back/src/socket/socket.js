@@ -1,311 +1,305 @@
-import { Server } from "socket.io";
-import fetch from "node-fetch";
+import { Server } from 'socket.io'
+import fetch from 'node-fetch'
 
 export default function setupSocket(server) {
-  const io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
-  });
+	const io = new Server(server, {
+		cors: {
+			origin: '*',
+			methods: ['GET', 'POST']
+		}
+	})
 
-  const games = {};
+	const games = {}
 
-  io.on("connection", (socket) => {
-    console.log(`Nouvelle connexion : ${socket.id}`);
+	io.on('connection', (socket) => {
+		console.log(`Nouvelle connexion : ${socket.id}`)
 
-    socket.on("joinGame", (gameId, userId) => {
-      socket.join(gameId);
-      
-      // Initialiser le jeu s'il n'existe pas
-      if (!games[gameId]) {
-        games[gameId] = {
-          started: false,
-          players: [],
-          object: null,
-          winner: null,
-          currentTurn: null,
-          lastGuess: null,
-          turnTimeout: null,
-          guesses: [], // Historique des devinettes
-          currentRound: 0,
-          maxPlayers: 2,
-        };
-      }
+		socket.on('joinGame', (gameId, userId) => {
+			socket.join(gameId)
 
-      const game = games[gameId];
-      
-      // Ajouter le joueur s'il n'est pas déjà dans la partie
-      if (!game.players.includes(userId) && game.players.length < game.maxPlayers) {
-        game.players.push(userId);
-        
-        // Notifier tous les joueurs qu'un nouveau joueur a rejoint
-        io.to(gameId).emit("playerJoined", userId);
-        
-        // Envoyer la liste mise à jour des joueurs à tout le monde
-        io.to(gameId).emit("playersUpdate", game.players);
-      }
+			// Initialiser le jeu s'il n'existe pas
+			if (!games[gameId]) {
+				games[gameId] = {
+					started: false,
+					players: [],
+					object: null,
+					winner: null,
+					currentTurn: null,
+					lastGuess: null,
+					turnTimeout: null,
+					guesses: [], // Historique des devinettes
+					currentRound: 0,
+					maxPlayers: 2
+				}
+			}
 
-      // Informer le client s'il est le créateur de la partie
-      io.to(socket.id).emit("isGameCreator", game.players[0]);
+			const game = games[gameId]
 
-      // Si la partie est déjà en cours, envoyer l'état actuel au nouveau joueur
-      if (game.started) {
-        socket.emit("gameStarted", { 
-          object: game.object,
-          currentTurn: game.currentTurn,
-          lastGuess: game.lastGuess
-        });
-      }
-    });
+			// Ajouter le joueur s'il n'est pas déjà dans la partie
+			if (!game.players.includes(userId) && game.players.length < game.maxPlayers) {
+				game.players.push(userId)
 
-    socket.on("startGame", async (gameId) => {
-      try {
-        const game = games[gameId];
-        
-        if (!game || game.started || game.players.length < 2) {
-          return;
-        }
+				// Notifier tous les joueurs qu'un nouveau joueur a rejoint
+				io.to(gameId).emit('playerJoined', userId)
 
-        // Récupérer un produit aléatoire
-        const response = await fetch("https://fakestoreapi.com/products");
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des objets");
-        }
+				// Envoyer la liste mise à jour des joueurs à tout le monde
+				io.to(gameId).emit('playersUpdate', game.players)
+			}
 
-        const products = await response.json();
-        const randomProduct = products[Math.floor(Math.random() * products.length)];
+			// Informer le client s'il est le créateur de la partie
+			io.to(socket.id).emit('isGameCreator', game.players[0])
 
-        // Configurer l'objet du jeu
-        game.object = {
-          name: randomProduct.title,
-          image: randomProduct.image,
-          price: randomProduct.price,
-        };
+			// Si la partie est déjà en cours, envoyer l'état actuel au nouveau joueur
+			if (game.started) {
+				socket.emit('gameStarted', {
+					object: game.object,
+					currentTurn: game.currentTurn,
+					lastGuess: game.lastGuess
+				})
+			}
+		})
 
-        game.started = true;
-        game.currentTurn = game.players[0];
-        game.currentRound = 1;
+		socket.on('startGame', async (gameId) => {
+			try {
+				const game = games[gameId]
 
-        // Notifier tous les joueurs du début de la partie
-        io.to(gameId).emit("gameStarted", { 
-          object: game.object,
-          currentTurn: game.currentTurn 
-        });
+				if (!game || game.started || game.players.length < 2) {
+					return
+				}
 
-        // Envoyer l'état initial du tour
-        io.to(gameId).emit("turnUpdate", { 
-          currentTurn: game.currentTurn 
-        });
+				// Récupérer un produit aléatoire
+				const response = await fetch('https://fakestoreapi.com/products')
+				if (!response.ok) {
+					throw new Error('Erreur lors de la récupération des objets')
+				}
 
-        // Mettre en place le timeout du tour
-        startTurnTimeout(gameId);
+				const products = await response.json()
+				const randomProduct = products[Math.floor(Math.random() * products.length)]
 
-        // Mettre à jour l'état du jeu dans la base de données
-        try {
-          const updateResponse = await fetch(
-            `http://localhost:3000/game/start/${gameId}`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${socket.handshake.query.token}`,
-              },
-              body: JSON.stringify({
-                userId: game.players[0],
-                status: "started",
-                currentTurn: game.currentTurn,
-              }),
-            }
-          );
+				// Configurer l'objet du jeu
+				game.object = {
+					name: randomProduct.title,
+					image: randomProduct.image,
+					price: randomProduct.price
+				}
 
-          if (!updateResponse.ok) {
-            throw new Error("Erreur lors de la mise à jour du jeu dans la base de données");
-          }
-        } catch (dbError) {
-          console.error("Erreur base de données:", dbError);
-        }
-      } catch (error) {
-        console.error("Erreur lors du démarrage de la partie:", error);
-        io.to(gameId).emit("gameError", {
-          message: "Erreur lors du démarrage de la partie"
-        });
-      }
-    });
+				game.started = true
+				game.currentTurn = game.players[0]
+				game.currentRound = 1
 
-    socket.on("makeGuess", async (gameId, data) => {
-      const game = games[gameId];
+				// Notifier tous les joueurs du début de la partie
+				io.to(gameId).emit('gameStarted', {
+					object: game.object,
+					currentTurn: game.currentTurn
+				})
 
-      if (!game || !game.started || game.winner || game.currentTurn !== data.userId) {
-        return;
-      }
+				// Envoyer l'état initial du tour
+				io.to(gameId).emit('turnUpdate', {
+					currentTurn: game.currentTurn
+				})
 
-      clearTimeout(game.turnTimeout);
+				// Mettre en place le timeout du tour
+				startTurnTimeout(gameId)
 
-      const playerGuess = parseFloat(data.guess);
-      const actualPrice = parseFloat(game.object.price);
+				// Mettre à jour l'état du jeu dans la base de données
+				try {
+					const updateResponse = await fetch(`http://localhost:3000/game/start/${gameId}`, {
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${socket.handshake.query.token}`
+						},
+						body: JSON.stringify({
+							userId: game.players[0],
+							status: 'started',
+							currentTurn: game.currentTurn
+						})
+					})
 
-      // Enregistrer la devinette
-      game.guesses.push({
-        userId: data.userId,
-        guess: playerGuess,
-        timestamp: Date.now()
-      });
+					if (!updateResponse.ok) {
+						throw new Error('Erreur lors de la mise à jour du jeu dans la base de données')
+					}
+				} catch (dbError) {
+					console.error('Erreur base de données:', dbError)
+				}
+			} catch (error) {
+				console.error('Erreur lors du démarrage de la partie:', error)
+				io.to(gameId).emit('gameError', {
+					message: 'Erreur lors du démarrage de la partie'
+				})
+			}
+		})
 
-      // Vérifier si la devinette est correcte
-      if (Math.abs(playerGuess - actualPrice) < 0.01) {
-        game.winner = data.userId;
-        
-        // Calculer le score final
-        const score = calculateScore(game.guesses, data.userId);
+		socket.on('makeGuess', async (gameId, data) => {
+			const game = games[gameId]
 
-        // Notifier la fin de la partie
-        io.to(gameId).emit("gameFinished", { 
-          winner: data.userId,
-          finalPrice: actualPrice,
-          score: score
-        });
+			if (!game || !game.started || game.winner || game.currentTurn !== data.userId) {
+				return
+			}
 
-        // Mettre à jour la base de données
-        try {
-          const response = await fetch(
-            `http://localhost:3000/game/finish/${gameId}`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${data.token}`,
-              },
-              body: JSON.stringify({
-                userId: data.userId,
-                score: score,
-                winner: data.userId,
-                guesses: game.guesses
-              }),
-            }
-          );
+			clearTimeout(game.turnTimeout)
 
-          if (!response.ok) {
-            throw new Error("Erreur lors de la finalisation du jeu");
-          }
-        } catch (error) {
-          console.error("Erreur base de données:", error);
-        }
-      } else {
-        // Mettre à jour le tour
-        const currentPlayerIndex = game.players.indexOf(data.userId);
-        const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length;
-        game.currentTurn = game.players[nextPlayerIndex];
-        game.lastGuess = playerGuess;
+			const playerGuess = parseFloat(data.guess)
+			const actualPrice = parseFloat(game.object.price)
 
-        // Calculer l'indice de proximité
-        const proximityHint = calculateProximityHint(playerGuess, actualPrice);
+			// Enregistrer la devinette
+			game.guesses.push({
+				userId: data.userId,
+				guess: playerGuess,
+				timestamp: Date.now()
+			})
 
-        // Notifier les joueurs
-        io.to(gameId).emit("gameUpdate", { 
-          lastGuess: playerGuess,
-          proximityHint: proximityHint
-        });
+			// Vérifier si la devinette est correcte
+			if (Math.abs(playerGuess - actualPrice) < 0.01) {
+				game.winner = data.userId
 
-        io.to(gameId).emit("turnUpdate", { 
-          currentTurn: game.currentTurn 
-        });
+				// Calculer le score final
+				const score = calculateScore(game.guesses, data.userId)
 
-        // Démarrer le nouveau timer
-        startTurnTimeout(gameId);
-      }
-    });
+				// Notifier la fin de la partie
+				io.to(gameId).emit('gameFinished', {
+					winner: data.userId,
+					finalPrice: actualPrice,
+					score: score
+				})
 
-    socket.on("timeoutTurn", (gameId) => {
-      const game = games[gameId];
-      if (!game || !game.started || game.winner) return;
+				// Mettre à jour la base de données
+				try {
+					const response = await fetch(`http://localhost:3000/game/finish/${gameId}`, {
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${data.token}`
+						},
+						body: JSON.stringify({
+							userId: data.userId,
+							score: score,
+							winner: data.userId,
+							guesses: game.guesses
+						})
+					})
 
-      handleTurnTimeout(gameId);
-    });
+					if (!response.ok) {
+						throw new Error('Erreur lors de la finalisation du jeu')
+					}
+				} catch (error) {
+					console.error('Erreur base de données:', error)
+				}
+			} else {
+				// Mettre à jour le tour
+				const currentPlayerIndex = game.players.indexOf(data.userId)
+				const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length
+				game.currentTurn = game.players[nextPlayerIndex]
+				game.lastGuess = playerGuess
 
-    socket.on("disconnect", () => {
-      console.log(`Déconnexion de ${socket.id}`);
-      handlePlayerDisconnect(socket);
-    });
-  });
+				// Calculer l'indice de proximité
+				const proximityHint = calculateProximityHint(playerGuess, actualPrice)
 
-  // Fonction utilitaire pour démarrer le timeout du tour
-  function startTurnTimeout(gameId) {
-    const game = games[gameId];
-    if (game.turnTimeout) {
-      clearTimeout(game.turnTimeout);
-    }
+				// Notifier les joueurs
+				io.to(gameId).emit('gameUpdate', {
+					lastGuess: playerGuess,
+					proximityHint: proximityHint
+				})
 
-    game.turnTimeout = setTimeout(() => {
-      handleTurnTimeout(gameId);
-    }, 20000); // 20 secondes
-  }
+				io.to(gameId).emit('turnUpdate', {
+					currentTurn: game.currentTurn
+				})
 
-  // Gérer le timeout d'un tour
-  function handleTurnTimeout(gameId) {
-    const game = games[gameId];
-    if (!game || !game.started || game.winner) return;
+				// Démarrer le nouveau timer
+				startTurnTimeout(gameId)
+			}
+		})
 
-    const currentPlayerIndex = game.players.indexOf(game.currentTurn);
-    const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length;
-    game.currentTurn = game.players[nextPlayerIndex];
+		socket.on('timeoutTurn', (gameId) => {
+			const game = games[gameId]
+			if (!game || !game.started || game.winner) return
 
-    io.to(gameId).emit("turnUpdate", { 
-      currentTurn: game.currentTurn 
-    });
+			handleTurnTimeout(gameId)
+		})
 
-    startTurnTimeout(gameId);
-  }
+		socket.on('disconnect', () => {
+			console.log(`Déconnexion de ${socket.id}`)
+			handlePlayerDisconnect(socket)
+		})
+	})
 
-  // Gérer la déconnexion d'un joueur
-  function handlePlayerDisconnect(socket) {
-    // Parcourir tous les jeux pour trouver et nettoyer les parties du joueur déconnecté
-    Object.keys(games).forEach((gameId) => {
-      const game = games[gameId];
-      const player = game.players.find(p => 
-        socket.rooms.has(gameId) // Vérifie si le socket était dans cette room
-      );
+	// Fonction utilitaire pour démarrer le timeout du tour
+	function startTurnTimeout(gameId) {
+		const game = games[gameId]
+		if (game.turnTimeout) {
+			clearTimeout(game.turnTimeout)
+		}
 
-      if (player) {
-        // Notifier les autres joueurs
-        io.to(gameId).emit("playerLeft", player);
-        
-        // Si la partie n'est pas terminée, la terminer
-        if (game.started && !game.winner) {
-          const remainingPlayer = game.players.find(p => p !== player);
-          if (remainingPlayer) {
-            game.winner = remainingPlayer;
-            io.to(gameId).emit("gameFinished", {
-              winner: remainingPlayer,
-              reason: "disconnect"
-            });
-          }
-        }
-      }
-    });
-  }
+		game.turnTimeout = setTimeout(() => {
+			handleTurnTimeout(gameId)
+		}, 20000) // 20 secondes
+	}
 
-  // Calculer l'indice de proximité
-  function calculateProximityHint(guess, actualPrice) {
-    const diff = Math.abs(actualPrice - guess);
-    
-    if (diff === 0) return "🎯 Exact !";
-    if (diff <= 5) return "🔥 Très très proche !";
-    if (diff <= 10) return "🔥 Très proche !";
-    if (diff <= 20) return "🙂 Proche";
-    if (diff <= 50) return "😐 Moyennement loin";
-    if (diff <= 100) return "😐 Loin";
-    return "❄️ Très loin";
-  }
+	// Gérer le timeout d'un tour
+	function handleTurnTimeout(gameId) {
+		const game = games[gameId]
+		if (!game || !game.started || game.winner) return
 
-  // Calculer le score final
-  function calculateScore(guesses, winnerId) {
-    const playerGuesses = guesses.filter(g => g.userId === winnerId).length;
-    const baseScore = 1000;
-    const penaltyPerGuess = 50;
-    
-    return Math.max(baseScore - (playerGuesses - 1) * penaltyPerGuess, 100);
-  }
+		const currentPlayerIndex = game.players.indexOf(game.currentTurn)
+		const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length
+		game.currentTurn = game.players[nextPlayerIndex]
 
-  return io;
+		io.to(gameId).emit('turnUpdate', {
+			currentTurn: game.currentTurn
+		})
+
+		startTurnTimeout(gameId)
+	}
+
+	// Gérer la déconnexion d'un joueur
+	function handlePlayerDisconnect(socket) {
+		// Parcourir tous les jeux pour trouver et nettoyer les parties du joueur déconnecté
+		Object.keys(games).forEach((gameId) => {
+			const game = games[gameId]
+			const player = game.players.find(
+				(p) => socket.rooms.has(gameId) // Vérifie si le socket était dans cette room
+			)
+
+			if (player) {
+				// Notifier les autres joueurs
+				io.to(gameId).emit('playerLeft', player)
+
+				// Si la partie n'est pas terminée, la terminer
+				if (game.started && !game.winner) {
+					const remainingPlayer = game.players.find((p) => p !== player)
+					if (remainingPlayer) {
+						game.winner = remainingPlayer
+						io.to(gameId).emit('gameFinished', {
+							winner: remainingPlayer,
+							reason: 'disconnect'
+						})
+					}
+				}
+			}
+		})
+	}
+
+	// Calculer l'indice de proximité
+	function calculateProximityHint(guess, actualPrice) {
+		const diff = Math.abs(actualPrice - guess)
+
+		if (diff === 0) return '🎯 Exact !'
+		if (diff <= 5) return '🔥 Très très proche !'
+		if (diff <= 10) return '🔥 Très proche !'
+		if (diff <= 20) return '🙂 Proche'
+		if (diff <= 50) return '😐 Moyennement loin'
+		if (diff <= 100) return '😐 Loin'
+		return '❄️ Très loin'
+	}
+
+	// Calculer le score final
+	function calculateScore(guesses, winnerId) {
+		const playerGuesses = guesses.filter((g) => g.userId === winnerId).length
+		const baseScore = 1000
+		const penaltyPerGuess = 50
+
+		return Math.max(baseScore - (playerGuesses - 1) * penaltyPerGuess, 100)
+	}
+
+	return io
 }

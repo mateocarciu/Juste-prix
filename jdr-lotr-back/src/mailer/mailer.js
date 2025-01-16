@@ -1,18 +1,18 @@
-import nodemailer from "nodemailer";
-import mjml2html from "mjml";
+import nodemailer from 'nodemailer'
+import mjml2html from 'mjml'
 
 // Configurer le transporteur Nodemailer
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.MAILER_USER || "", // Utilisez votre propre adresse email
-    pass: process.env.MAILER_PASSWORD, // Utilise un mot de passe d'application pour plus de sécurité
-  },
-});
+	service: 'gmail',
+	auth: {
+		user: process.env.MAILER_USER || '', // Utilisez votre propre adresse email
+		pass: process.env.MAILER_PASSWORD // Utilise un mot de passe d'application pour plus de sécurité
+	}
+})
 
 // Fonction pour générer le contenu HTML à partir du template MJML
 const generateVerificationEmail = (verificationLink) => {
-  const mjmlTemplate = `
+	const mjmlTemplate = `
     <mjml>
       <mj-body background-color="#f4f4f4">
         <mj-section background-color="#ffffff" padding="20px">
@@ -55,26 +55,26 @@ const generateVerificationEmail = (verificationLink) => {
         </mj-section>
       </mj-body>
     </mjml>
-  `;
+  `
 
-  // Convertir le MJML en HTML
-  const { html } = mjml2html(mjmlTemplate);
+	// Convertir le MJML en HTML
+	const { html } = mjml2html(mjmlTemplate)
 
-  return html;
-};
+	return html
+}
 
 // Fonction pour envoyer l'email de vérification
 export const sendVerificationEmail = async (to, verificationLink) => {
-  // Générer le HTML à partir du template MJML
-  const htmlContent = generateVerificationEmail(verificationLink);
+	// Générer le HTML à partir du template MJML
+	const htmlContent = generateVerificationEmail(verificationLink)
 
-  const mailOptions = {
-    from: process.env.MAILER_USER,
-    to,
-    subject: "Vérifiez votre compte",
-    html: htmlContent, // Utiliser le HTML généré par MJML
-  };
+	const mailOptions = {
+		from: process.env.MAILER_USER,
+		to,
+		subject: 'Vérifiez votre compte',
+		html: htmlContent // Utiliser le HTML généré par MJML
+	}
 
-  // Envoyer l'email via Nodemailer
-  return transporter.sendMail(mailOptions);
-};
+	// Envoyer l'email via Nodemailer
+	return transporter.sendMail(mailOptions)
+}
