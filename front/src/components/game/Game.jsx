@@ -192,13 +192,15 @@ const Game = () => {
 			{errorMessage && <div className='bg-red-500 text-white p-4 rounded mb-4 shadow-md'>{errorMessage}</div>}
 
 			{gameFinished ? (
-				<div className='relative bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center w-full max-w-md'>
+				<div className='relative bg-white dark:bg-gray-800 rounded-lg p-8 text-center w-full max-w-md'>
 					<h2 className='text-3xl font-bold text-green-600 dark:text-green-400 mb-4'>Partie terminée !</h2>
 					<p className='text-xl text-gray-700 dark:text-gray-300 mb-6'>
 						Le vainqueur est : <span className='font-bold'>{winner}</span>
 					</p>
-					<Link to='/dashboard' className='bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-8 rounded-full shadow-lg hover:from-blue-600 hover:to-purple-600 hover:shadow-xl transition duration-300 mt-6'>
-						Dashboard
+					<Link to='/dashboard' className='flex dark:text-slate-300 justify-center py-3 px-8 rounded-full duration-300 mt-6'>
+						<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='size-6'>
+							<path stroke-linecap='round' stroke-linejoin='round' d='M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3' />
+						</svg>
 					</Link>
 				</div>
 			) : !gameStarted ? (

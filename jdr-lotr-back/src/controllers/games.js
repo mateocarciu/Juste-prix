@@ -37,17 +37,14 @@ export async function updateGame(request, reply) {
 	// Gestion des actions
 	switch (action) {
 		case 'join':
-			if (game.player1 && game.player2) {
-				return reply.status(400).send({ error: 'Il y a déjà 2 joueurs dans cette partie !' })
-			}
 			if (game.state !== 'pending') {
 				return reply.status(400).send({ error: "Cette partie n'est plus en attente." })
 			}
-
-			if (!game.player1) {
-				game.player1 = userId // Ajout du premier joueur
-			} else if (!game.player2) {
-				game.player2 = userId // Ajout du deuxième joueur
+			if (game.creator && game.player && game.creator !== userId && game.player !== userId) {
+				return reply.status(400).send({ error: 'Il y a déjà deux joueurs dans cette partie, vous ne pouvez pas rejoindre !' })
+			}
+			if (!game.player && game.creator !== userId) {
+				game.player = userId // Ajout du joueur
 			}
 			break
 

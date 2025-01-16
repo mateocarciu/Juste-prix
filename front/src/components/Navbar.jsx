@@ -31,42 +31,39 @@ const Navbar = () => {
 	}
 
 	return (
-		<nav className='fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md dark:shadow-lg transition duration-300 p-4 z-10'>
-			<ul className='flex justify-between items-center text-gray-800 dark:text-gray-200'>
-				{/* Logo principal */}
-				<li>
-					<Link to='/' className='flex items-center'>
-						<img src='https://upload.wikimedia.org/wikipedia/fr/2/22/Logo_Juste_Prix_2024_%28M6%29.png' alt='logo' className='h-14 w-20' />
-					</Link>
-				</li>
+		<nav className='fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md transition duration-300 z-10'>
+			<div className='container mx-auto px-4 py-3 flex justify-between items-center'>
+				{/* Logo */}
+				<Link to='/' className='flex items-center'>
+					<img src='https://upload.wikimedia.org/wikipedia/fr/2/22/Logo_Juste_Prix_2024_%28M6%29.png' alt='logo' className='h-12 w-auto' />
+				</Link>
 
-				{/* Navigation et actions */}
-				<li className='flex items-center gap-4'>
-					{/* Bouton pour le mode sombre */}
+				{/* Menu */}
+				<div className='flex items-center space-x-4'>
+					{/* Mode sombre */}
 					<DarkModeToggle />
 
 					{user && user.token ? (
 						<>
-							{/* Dashboard (icône de tableau de bord) */}
-							<Link to='/dashboard'>Dashboard</Link>
-
-							{/* Déconnexion (icône de déconnexion) */}
-							<button onClick={handleLogout} className='bg-gradient-to-r from-red-500 to-red-700 dark:from-red-600 dark:to-red-800 hover:from-red-600 hover:to-red-800 text-white p-2 rounded-full shadow-md transition duration-300 flex items-center justify-center'>
-								<img src='https://cdn-icons-png.flaticon.com/512/159/159707.png' alt='Logout' className='h-6 w-6' />
+							<Link to='/dashboard' className='text-gray-800 dark:text-gray-200 hover:text-teal-500 dark:hover:text-teal-400 transition'>
+								Dashboard
+							</Link>
+							<button onClick={handleLogout} className='bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-md transition'>
+								Déconnexion
 							</button>
 						</>
 					) : (
 						<>
-							<Link to='/login' className='mr-6 text-lg hover:text-gray-600 dark:hover:text-gray-400 transition duration-300'>
+							<Link to='/login' className='text-gray-800 dark:text-gray-200 hover:text-teal-500 dark:hover:text-teal-400 transition'>
 								Connexion
 							</Link>
-							<Link to='/register' className='bg-gradient-to-r from-teal-500 to-cyan-600 dark:from-teal-600 dark:to-cyan-700 hover:from-teal-600 hover:to-cyan-700 text-white py-2 px-6 rounded-full shadow-md transition duration-300'>
+							<Link to='/register' className='bg-teal-500 hover:bg-teal-600 text-white py-2 px-4 rounded-lg shadow-md transition'>
 								Inscription
 							</Link>
 						</>
 					)}
-				</li>
-			</ul>
+				</div>
+			</div>
 		</nav>
 	)
 }
