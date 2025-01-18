@@ -8,7 +8,6 @@ const Dashboard = () => {
 	const navigate = useNavigate()
 	const [socket, setSocket] = useState(null)
 	const [gameId, setGameId] = useState('')
-	const [isGameCreator, setIsGameCreator] = useState(false)
 	const [openGames, setOpenGames] = useState([])
 	const [finishedGames, setFinishedGames] = useState([])
 
@@ -19,57 +18,56 @@ const Dashboard = () => {
 			const newSocket = io(`${import.meta.env.VITE_API_URL}`, {
 				query: { token: user.token }
 			})
-
 			setSocket(newSocket)
 
-			return () => newSocket.close()
+			newSocket.on('newGameCreated', () => {
+				fetchOpenGames()
+			})
+
+			return () => {
+				newSocket.close()
+			}
 		}
 	}, [user, navigate])
 
+	const fetchOpenGames = async () => {
+		try {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/games/open`, {
+				headers: {
+					Authorization: `Bearer ${user.token}`
+				}
+			})
+			if (!response.ok) {
+				throw new Error('Erreur lors de la récupération des parties ouvertes')
+			}
+			const data = await response.json()
+			setOpenGames(data)
+		} catch (error) {
+			console.error('Erreur :', error)
+		}
+	}
+
+	const fetchFinishedGames = async () => {
+		try {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/games/finished`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${user.token}`
+				},
+				body: JSON.stringify({ userId: user.id })
+			})
+			if (!response.ok) {
+				throw new Error('Erreur lors de la récupération des parties terminées')
+			}
+			const data = await response.json()
+			setFinishedGames(data)
+		} catch (error) {
+			console.error('Erreur :', error)
+		}
+	}
+
 	useEffect(() => {
-		const fetchOpenGames = async () => {
-			try {
-				const response = await fetch(`${import.meta.env.VITE_API_URL}/games/open`, {
-					headers: {
-						Authorization: `Bearer ${user.token}`
-					}
-				})
-
-				if (!response.ok) {
-					throw new Error('Erreur lors de la récupération des parties ouvertes')
-				}
-
-				const data = await response.json()
-				setOpenGames(data)
-			} catch (error) {
-				console.error('Erreur :', error)
-			}
-		}
-
-		const fetchFinishedGames = async () => {
-			try {
-				const response = await fetch(`${import.meta.env.VITE_API_URL}/games/finished`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${user.token}`
-					},
-					body: JSON.stringify({
-						userId: user.id
-					})
-				})
-
-				if (!response.ok) {
-					throw new Error('Erreur lors de la récupération des parties terminées')
-				}
-
-				const data = await response.json()
-				setFinishedGames(data)
-			} catch (error) {
-				console.error('Erreur :', error)
-			}
-		}
-
 		if (user) {
 			fetchOpenGames()
 			fetchFinishedGames()
@@ -84,21 +82,16 @@ const Dashboard = () => {
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${user.token}`
 				},
-				body: JSON.stringify({
-					userId: user.id
-				})
+				body: JSON.stringify({ userId: user.id })
 			})
-
 			if (!response.ok) {
 				throw new Error('Erreur lors de la création de la partie')
 			}
-
 			const data = await response.json()
 			setGameId(data.gameId)
-			setIsGameCreator(true)
-
 			if (socket) {
 				socket.emit('joinGame', data.gameId, user.id)
+				socket.emit('fetchNewGames', user.id)
 				navigate(`/game/${data.gameId}`)
 			}
 		} catch (error) {
@@ -114,18 +107,15 @@ const Dashboard = () => {
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${user.token}`
 				},
-				body: JSON.stringify({
-					userId: user.id
-				})
+				body: JSON.stringify({ userId: user.id })
 			})
-
 			if (!response.ok) {
 				const data = await response.json()
 				throw new Error(data.error || 'Erreur lors de la tentative de rejoindre la partie')
 			}
-
 			if (socket) {
 				socket.emit('joinGame', gameId, user.id)
+				socket.emit('fetchNewGames')
 				navigate(`/game/${gameId}`)
 			}
 		} catch (error) {
@@ -135,73 +125,82 @@ const Dashboard = () => {
 	}
 
 	return (
-		<div className='flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 p-6 sm:p-10 transition duration-300'>
-			{/* Header Section */}
-			<h1 className='text-3xl sm:text-5xl font-bold mb-8 sm:mb-12 pt-16 sm:pt-20 text-slate-800 dark:text-white tracking-wide text-center'>Bienvenue, {user.id}</h1>
+		<div className='p-8 bg-base-200 text-base-content min-h-screen'>
+			<div className='max-w-7xl mx-auto space-y-10'>
+				<header className='text-center'>
+					<h1 className='text-4xl font-extrabold mb-2'>Bonjour, {user?.id}</h1>
+					<p className='text-gray-600 dark:text-gray-400'>Gérez vos parties ouvertes et découvrez les parties terminées.</p>
+				</header>
 
-			{/* Button to Create Game */}
-			<div className='mb-6 sm:mb-8'>
-				{!gameId && (
-					<button onClick={createGame} className='bg-teal-500 hover:bg-teal-600 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300'>
-						Créer une partie
-					</button>
-				)}
-			</div>
+				{/* Actions */}
+				<div className='flex justify-center'>
+					{!gameId && (
+						<button onClick={createGame} className='btn btn-primary btn-lg shadow-lg hover:scale-105 transition-transform'>
+							Créer une nouvelle partie
+						</button>
+					)}
+				</div>
 
-			{/* Open Games Section */}
-			<div className='w-full max-w-3xl bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-4 sm:p-8 hover:shadow-lg transition-shadow duration-300'>
-				<h2 className='text-2xl sm:text-3xl font-semibold mb-4 sm:mb-6 text-purple-600 dark:text-purple-400'>Parties ouvertes</h2>
-				{openGames.length > 0 ? (
-					<ul className='space-y-4 sm:space-y-6'>
-						{openGames.map((game) => (
-							<li key={game.id} className='flex flex-col sm:flex-row justify-between items-center bg-slate-100 dark:bg-slate-700 p-4 sm:p-6 rounded-lg shadow hover:bg-slate-200 dark:hover:bg-slate-600 transition duration-200'>
-								<span className='text-lg sm:text-xl font-medium text-slate-900 dark:text-slate-200 mb-2 sm:mb-0'>
-									Partie {game.id} (Créée par {game.creator})
-								</span>
-								<button onClick={() => joinGame(game.id)} className='bg-purple-500 dark:bg-purple-600 text-white py-2 px-4 sm:py-2 sm:px-6 rounded-full shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 transition duration-200'>
-									Rejoindre
-								</button>
-							</li>
-						))}
-					</ul>
-				) : (
-					<p className='text-slate-500 dark:text-slate-400'>Aucune partie ouverte pour le moment.</p>
-				)}
-			</div>
+				{/* Open Games */}
+				<section>
+					<h2 className='text-2xl font-semibold mb-4'>Parties ouvertes</h2>
+					{openGames.length > 0 ? (
+						<div className='grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
+							{openGames.map((game) => (
+								<div key={game.id} className='card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow'>
+									<div className='card-body'>
+										<h3 className='card-title'>Partie {game.id}</h3>
+										<p>
+											Créée par : <strong>{game.creator}</strong>
+										</p>
+										<div className='card-actions justify-end'>
+											<button onClick={() => joinGame(game.id)} className='btn btn-accent'>
+												Rejoindre
+											</button>
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<p className='text-gray-500'>Aucune partie ouverte pour le moment.</p>
+					)}
+				</section>
 
-			{/* Finished Games Section */}
-			<div className='w-full max-w-3xl bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-4 sm:p-8 mt-6 sm:mt-8 hover:shadow-lg transition-shadow duration-300'>
-				<h2 className='text-2xl sm:text-3xl font-semibold mb-4 sm:mb-6 text-purple-600 dark:text-purple-400'>Parties terminées</h2>
-				{finishedGames.length > 0 ? (
-					<div className='overflow-y-auto max-h-96'>
-						<table className='min-w-full bg-white dark:bg-slate-800'>
-							<thead>
-								<tr>
-									<th className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>ID</th>
-									<th className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>Créateur</th>
-									<th className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>Gagnant</th>
-									<th className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>Score du gagnant</th>
-									<th className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>Date de création</th>
-									<th className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>Date de fin</th>
-								</tr>
-							</thead>
-							<tbody>
-								{finishedGames.map((game) => (
-									<tr key={game.id}>
-										<td className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>{game.id}</td>
-										<td className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>{game.creator}</td>
-										<td className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>{game.winner}</td>
-										<td className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>{game.winnerScore}</td>
-										<td className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>{new Date(game.createdAt).toLocaleString()}</td>
-										<td className='py-2 px-4 border-b border-slate-200 dark:border-slate-700'>{new Date(game.updatedAt).toLocaleString()}</td>
+				{/* Finished Games */}
+				<section>
+					<h2 className='text-2xl font-semibold mb-4'>Parties terminées</h2>
+					{finishedGames.length > 0 ? (
+						<div className='overflow-x-auto'>
+							<table className='table table-zebra w-full'>
+								<thead>
+									<tr>
+										<th>ID</th>
+										<th>Créateur</th>
+										<th>Gagnant</th>
+										<th>Score</th>
+										<th>Créée</th>
+										<th>Terminée</th>
 									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				) : (
-					<p className='text-slate-500 dark:text-slate-400'>Aucune partie terminée pour le moment.</p>
-				)}
+								</thead>
+								<tbody>
+									{finishedGames.map((game) => (
+										<tr key={game.id}>
+											<td>{game.id}</td>
+											<td>{game.creator}</td>
+											<td>{game.winner}</td>
+											<td>{game.winnerScore}</td>
+											<td>{new Date(game.createdAt).toLocaleString()}</td>
+											<td>{new Date(game.updatedAt).toLocaleString()}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					) : (
+						<p className='text-gray-500'>Aucune partie terminée pour le moment.</p>
+					)}
+				</section>
 			</div>
 		</div>
 	)

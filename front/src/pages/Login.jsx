@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
@@ -7,6 +7,8 @@ import { UserContext } from '../context/UserContext'
 const Login = () => {
 	const { login, user } = useContext(UserContext)
 	const navigate = useNavigate()
+	const [alertMessage, setAlertMessage] = useState('')
+	const [alertType, setAlertType] = useState('error')
 
 	useEffect(() => {
 		if (user && user.token) {
@@ -35,41 +37,65 @@ const Login = () => {
 				login(data.user)
 				navigate('/dashboard')
 			} else {
-				alert(data.error || 'Une erreur est survenue')
+				setAlertMessage(data.error || 'Une erreur est survenue')
+				setAlertType('error')
 			}
 		} catch (error) {
 			console.error('Erreur lors de la requête:', error)
-			alert('Erreur de connexion. Veuillez réessayer.')
+			setAlertMessage('Erreur de connexion. Veuillez réessayer.')
+			setAlertType('error')
 		} finally {
 			setSubmitting(false)
 		}
 	}
 
 	return (
-		<div className='flex flex-col justify-center items-center bg-white dark:bg-gray-800'>
-			<div className='w-full max-w-md p-8 rounded shadow-lg'>
-				<Formik initialValues={{ email: '', password: '' }} validationSchema={validationSchema} onSubmit={handleSubmit}>
-					{({ isSubmitting }) => (
-						<Form>
-							<h2 className='text-3xl font-bold mb-6 text-center'>Connexion</h2>
-							<div className='mb-4'>
-								<Field type='email' name='email' placeholder='Email' className='input input-bordered w-full' />
-								<ErrorMessage name='email' component='div' className='text-red-600' />
+		<div className='p-8 bg-base-200 text-base-content'>
+			<div className='max-w-7xl mx-auto space-y-10'>
+				{/* Login Form */}
+				<div className='max-w-md mx-auto bg-base-100 p-8 rounded-xl shadow-xl mb-4'>
+					{/* Alert Pop-up */}
+					{alertMessage && (
+						<div className={`alert ${alertType === 'error' ? 'alert-error' : 'alert-success'}`}>
+							<div>
+								<span>{alertMessage}</span>
 							</div>
-							<div className='mb-4'>
-								<Field type='password' name='password' placeholder='Mot de passe' className='input input-bordered w-full' />
-								<ErrorMessage name='password' component='div' className='text-red-600' />
-							</div>
-							<button type='submit' className='btn btn-primary w-full' disabled={isSubmitting}>
-								{isSubmitting ? 'Connexion en cours...' : 'Se connecter'}
-							</button>
-						</Form>
+						</div>
 					)}
-				</Formik>
-				<div className='mt-4 text-center'>
-					<Link to='/register' className='text-blue-500 hover:underline'>
-						Inscription
-					</Link>
+					<Formik initialValues={{ email: '', password: '' }} validationSchema={validationSchema} onSubmit={handleSubmit}>
+						{({ isSubmitting }) => (
+							<Form>
+								<h2 className='text-3xl font-bold mb-6 text-center'>Connexion</h2>
+
+								{/* Email Field */}
+								<div className='mb-4'>
+									<Field type='email' name='email' placeholder='Votre email' className='input input-bordered w-full' />
+									<ErrorMessage name='email' component='div' className='text-red-500 text-sm mt-1' />
+								</div>
+
+								{/* Password Field */}
+								<div className='mb-6'>
+									<Field type='password' name='password' placeholder='Votre mot de passe' className='input input-bordered w-full' />
+									<ErrorMessage name='password' component='div' className='text-red-500 text-sm mt-1' />
+								</div>
+
+								{/* Submit Button */}
+								<button type='submit' disabled={isSubmitting} className='btn btn-primary w-full text-lg py-2 mb-4'>
+									{isSubmitting ? 'Connexion en cours...' : 'Se connecter'}
+								</button>
+							</Form>
+						)}
+					</Formik>
+
+					{/* Registration Link */}
+					<div className='text-center'>
+						<p>
+							Pas encore de compte ?{' '}
+							<Link to='/register' className='link text-primary'>
+								Inscrivez-vous ici
+							</Link>
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>

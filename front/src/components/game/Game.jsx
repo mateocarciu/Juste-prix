@@ -97,7 +97,6 @@ const Game = () => {
 
 		newSocket.on('playerJoined', (playerId) => {
 			if (playerId !== user.id) {
-				console.log('Player joined')
 				setShowPlayerJoinedAlert(true)
 				setTimeout(() => setShowPlayerJoinedAlert(false), 5000)
 			}
@@ -177,73 +176,81 @@ const Game = () => {
 	}
 
 	return (
-		<div className='flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-6 transition duration-300'>
+		<div className='w-full h-screen bg-base-200 flex flex-col items-center justify-center p-6'>
+			{/* Player joined Alert */}
 			{showPlayerJoinedAlert && (
-				<div role='alert' className='alert alert-success'>
-					<svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6 shrink-0 stroke-current' fill='none' viewBox='0 0 24 24'>
-						<path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
-					</svg>
-					<span>Un joueur a rejoint la pertie, vous pouvez désormais la débuter</span>
+				<div className='alert alert-info'>
+					<p>Un joueur a rejoint la partie, vous pouvez désormais la débuter !</p>
 				</div>
 			)}
 
+			{/* Confetti on winner */}
 			{winner && <Confetti />}
 
-			{errorMessage && <div className='bg-red-500 text-white p-4 rounded mb-4 shadow-md'>{errorMessage}</div>}
+			{/* Error message */}
+			{errorMessage && <div className='alert alert-error'>{errorMessage}</div>}
 
+			{/* Game Finished */}
 			{gameFinished ? (
-				<div className='relative bg-white dark:bg-gray-800 rounded-lg p-8 text-center w-full max-w-md'>
-					<h2 className='text-3xl font-bold text-green-600 dark:text-green-400 mb-4'>Partie terminée !</h2>
-					<p className='text-xl text-gray-700 dark:text-gray-300 mb-6'>
+				<div className='text-center'>
+					<h2 className='text-3xl font-semibold mb-4'>Partie terminée !</h2>
+					<p className='text-xl'>
 						Le vainqueur est : <span className='font-bold'>{winner}</span>
 					</p>
-					<Link to='/dashboard' className='flex dark:text-slate-300 justify-center py-3 px-8 rounded-full duration-300 mt-6'>
-						<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='size-6'>
-							<path stroke-linecap='round' stroke-linejoin='round' d='M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3' />
-						</svg>
+					<Link to='/dashboard' className='btn btn-primary mt-4'>
+						Retourner au tableau de bord
 					</Link>
 				</div>
 			) : !gameStarted ? (
 				<div className='text-center'>
-					<h2 className='text-3xl font-bold mb-4 text-gray-900 dark:text-white'>La partie n'a pas encore commencé</h2>
-					{players.length < 2 && <p className='text-lg text-gray-600 dark:text-gray-400 mb-4'>En attente d'un autre joueur...</p>}
-					{isGameCreator && players.length >= 2 && (
-						<button onClick={startGame} className='bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-8 rounded-full shadow-lg hover:from-green-600 hover:to-green-700 hover:shadow-xl transition duration-300'>
-							Démarrer la partie
-						</button>
+					<h2 className='text-3xl font-semibold mb-4'>La partie n'a pas encore commencé</h2>
+					{players.length < 2 ? (
+						<p>En attente d'un autre joueur...</p>
+					) : (
+						<>
+							{isGameCreator && (
+								<button className='btn btn-primary' onClick={startGame}>
+									Démarrer la partie
+								</button>
+							)}
+						</>
 					)}
 				</div>
 			) : (
-				<div className='bg-white dark:bg-gray-800 shadow-2xl rounded-lg p-6 w-full max-w-md text-center animate__animated animate__fadeIn'>
-					<h2 className='text-3xl font-bold mb-4 text-purple-600 dark:text-purple-400'>Devinez le prix</h2>
+				<div className='text-center'>
+					<h2 className='text-3xl font-semibold mb-4'>Devinez le prix !</h2>
 
+					{/* Current Turn */}
 					{currentTurn && (
-						<div className={`mb-4 p-3 rounded-lg ${currentTurn === user.id ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'}`}>
-							<p className='font-semibold'>{currentTurn === user.id ? "C'est votre tour !" : `En attente de l'autre joueur (${timeLeft}s)`}</p>
+						<div className='mb-4'>
+							<p>{currentTurn === user.id ? "C'est votre tour !" : `En attente de l'autre joueur (${timeLeft}s)`}</p>
 						</div>
 					)}
 
+					{/* Object Display */}
 					{selectedObject && (
-						<div className='mb-4'>
-							<img src={selectedObject.image} alt='Object' className='h-64 w-full object-cover rounded-md shadow-md' />
-							<p className='text-xl font-semibold mt-2 text-gray-700 dark:text-gray-300'>{selectedObject.name}</p>
-							<button onClick={() => alert(`Le prix réel est : ${selectedObject.price} €`)} className='mt-4 bg-red-500 text-white py-2 px-4 rounded-full shadow-md hover:bg-red-600 transition duration-300'>
-								Je veux voir les confettis (voir le prix réel)
+						<div className='bg-base-100 p-6 rounded-lg shadow-xl mb-6 max-w-sm mx-auto'>
+							<img src={selectedObject.image} alt='Object' className='w-full h-auto max-h-64 object-contain mb-4' />
+							<p className='text-xl text-center'>{selectedObject.name}</p>
+							<button className='btn btn-info mt-4 mx-auto block' onClick={() => alert(`Le prix réel est : ${selectedObject.price} €`)}>
+								Voir prix (🦧🦧)
 							</button>
 						</div>
 					)}
 
-					<div className='mb-4'>
-						<input type='number' value={playerGuess} onChange={(e) => setPlayerGuess(e.target.value)} disabled={!canPlay} className={`border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition ${!canPlay ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder='Devinez le prix' />
-						<button onClick={handleGuess} disabled={!canPlay} className={`w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-8 rounded-full shadow-md transition duration-300 mt-4 ${canPlay ? 'hover:shadow-xl hover:from-blue-600 hover:to-purple-600' : 'opacity-50 cursor-not-allowed'}`}>
+					{/* Player Guess Input */}
+					<div className='space-y-4'>
+						<input type='number' className='input input-bordered w-full max-w-xs' value={playerGuess} onChange={(e) => setPlayerGuess(e.target.value)} disabled={!canPlay} placeholder='Devinez le prix' />
+						<button className='btn btn-primary' onClick={handleGuess} disabled={!canPlay}>
 							Soumettre votre devinette
 						</button>
 					</div>
 
+					{/* Last Guess */}
 					{lastGuess && (
-						<div className='text-lg text-gray-700 dark:text-gray-300 mt-4'>
+						<div className='mt-4'>
 							<p>Dernière devinette : {lastGuess} €</p>
-							<p className='font-bold'>{proximityHint}</p>
+							<p>{proximityHint}</p>
 						</div>
 					)}
 				</div>

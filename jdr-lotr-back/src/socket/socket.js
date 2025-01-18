@@ -130,6 +130,11 @@ export default function setupSocket(server) {
 			}
 		})
 
+		socket.on('fetchNewGames', async () => {
+			io.emit('newGameCreated')
+			console.log('Nouvelle partie créée')
+		})
+
 		socket.on('makeGuess', async (gameId, data) => {
 			const game = games[gameId]
 

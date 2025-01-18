@@ -31,38 +31,89 @@ const Navbar = () => {
 	}
 
 	return (
-		<nav className='fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md transition duration-300 z-10'>
-			<div className='container mx-auto px-4 py-3 flex justify-between items-center'>
-				{/* Logo */}
-				<Link to='/' className='flex items-center'>
-					<img src='https://upload.wikimedia.org/wikipedia/fr/2/22/Logo_Juste_Prix_2024_%28M6%29.png' alt='logo' className='h-12 w-auto' />
+		<nav className='navbar bg-base-100 shadow-md px-4 sm:px-8'>
+			{/* Logo */}
+			<div className='navbar-start'>
+				<Link to='/' className='flex items-center gap-2'>
+					<span className='font-bold text-lg'>Le Juste Prix</span>
 				</Link>
+			</div>
 
-				{/* Menu */}
-				<div className='flex items-center space-x-4'>
-					{/* Mode sombre */}
-					<DarkModeToggle />
-
-					{user && user.token ? (
-						<>
-							<Link to='/dashboard' className='text-gray-800 dark:text-gray-200 hover:text-teal-500 dark:hover:text-teal-400 transition'>
-								Dashboard
-							</Link>
-							<button onClick={handleLogout} className='bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-md transition'>
-								Déconnexion
-							</button>
-						</>
-					) : (
-						<>
-							<Link to='/login' className='text-gray-800 dark:text-gray-200 hover:text-teal-500 dark:hover:text-teal-400 transition'>
-								Connexion
-							</Link>
-							<Link to='/register' className='bg-teal-500 hover:bg-teal-600 text-white py-2 px-4 rounded-lg shadow-md transition'>
-								Inscription
-							</Link>
-						</>
-					)}
+			{/* Menu pour mobile */}
+			<div className='navbar-end lg:hidden'>
+				<div className='dropdown'>
+					<label tabIndex={0} className='btn btn-ghost btn-circle'>
+						<svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+							<path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M4 6h16M4 12h16m-7 6h7' />
+						</svg>
+					</label>
+					<ul tabIndex={0} className='menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 right-0 z-10'>
+						<li>
+							<Link to='/'>Accueil</Link>
+						</li>
+						{user && user.token && (
+							<li>
+								<Link to='/dashboard'>Dashboard</Link>
+							</li>
+						)}
+						{user && user.token ? (
+							<li>
+								<button onClick={handleLogout} className='btn btn-primary btn-sm'>
+									Déconnexion
+								</button>
+							</li>
+						) : (
+							<>
+								<li>
+									<Link to='/login' className='btn btn-outline btn-sm'>
+										Connexion
+									</Link>
+								</li>
+								<li>
+									<Link to='/register' className='btn btn-primary btn-sm'>
+										Inscription
+									</Link>
+								</li>
+							</>
+						)}
+						<li>
+							<DarkModeToggle />
+						</li>
+					</ul>
 				</div>
+			</div>
+
+			{/* Menu pour desktop */}
+			<div className='navbar-center hidden lg:flex'>
+				<ul className='menu menu-horizontal px-1'>
+					<li>
+						<Link to='/'>Accueil</Link>
+					</li>
+					{user && user.token && (
+						<li>
+							<Link to='/dashboard'>Dashboard</Link>
+						</li>
+					)}
+				</ul>
+			</div>
+
+			{/* Déconnexion et DarkMode pour desktop */}
+			<div className='navbar-end hidden lg:flex items-center gap-4'>
+				<DarkModeToggle />
+				{user && user.token ? (
+					<button onClick={handleLogout} className='btn btn-primary btn-sm'>
+						Déconnexion
+					</button>
+				) : (
+					<>
+						<Link to='/login' className='btn btn-outline btn-sm'>
+							Connexion
+						</Link>
+						<Link to='/register' className='btn btn-primary btn-sm'>
+							Inscription
+						</Link>
+					</>
+				)}
 			</div>
 		</nav>
 	)
