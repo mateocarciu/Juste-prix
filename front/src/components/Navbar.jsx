@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
 import DarkModeToggle from './DarkmodeToggle'
@@ -6,6 +6,7 @@ import DarkModeToggle from './DarkmodeToggle'
 const Navbar = () => {
 	const { user, logout } = useContext(UserContext)
 	const navigate = useNavigate()
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
 
 	const handleLogout = async () => {
 		if (user && user.token) {
@@ -30,6 +31,23 @@ const Navbar = () => {
 		}
 	}
 
+	const handleMenuToggle = () => {
+		setIsMenuOpen(!isMenuOpen)
+	}
+
+	const handleClickOutside = (event) => {
+		if (!event.target.closest('.dropdown')) {
+			setIsMenuOpen(false)
+		}
+	}
+
+	useEffect(() => {
+		document.addEventListener('click', handleClickOutside)
+		return () => {
+			document.removeEventListener('click', handleClickOutside)
+		}
+	}, [])
+
 	return (
 		<nav className='navbar bg-base-100 shadow-md px-4 sm:px-8'>
 			{/* Logo */}
@@ -42,44 +60,46 @@ const Navbar = () => {
 			{/* Menu pour mobile */}
 			<div className='navbar-end lg:hidden'>
 				<div className='dropdown'>
-					<label tabIndex={0} className='btn btn-ghost btn-circle'>
+					<label tabIndex={0} className='btn btn-ghost btn-circle' onClick={handleMenuToggle}>
 						<svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
 							<path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M4 6h16M4 12h16m-7 6h7' />
 						</svg>
 					</label>
-					<ul tabIndex={0} className='menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 right-0 z-10'>
-						<li>
-							<Link to='/'>Accueil</Link>
-						</li>
-						{user && user.token && (
+					{isMenuOpen && (
+						<ul tabIndex={0} className='menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 right-0 z-10'>
 							<li>
-								<Link to='/dashboard'>Dashboard</Link>
+								<Link to='/'>Accueil</Link>
 							</li>
-						)}
-						{user && user.token ? (
+							{user && user.token && (
+								<li>
+									<Link to='/dashboard'>Dashboard</Link>
+								</li>
+							)}
+							{user && user.token ? (
+								<li>
+									<button onClick={handleLogout} className='btn btn-primary btn-sm'>
+										Déconnexion
+									</button>
+								</li>
+							) : (
+								<>
+									<li>
+										<Link to='/login' className='btn btn-outline btn-sm'>
+											Connexion
+										</Link>
+									</li>
+									<li>
+										<Link to='/register' className='btn btn-primary btn-sm'>
+											Inscription
+										</Link>
+									</li>
+								</>
+							)}
 							<li>
-								<button onClick={handleLogout} className='btn btn-primary btn-sm'>
-									Déconnexion
-								</button>
+								<DarkModeToggle />
 							</li>
-						) : (
-							<>
-								<li>
-									<Link to='/login' className='btn btn-outline btn-sm'>
-										Connexion
-									</Link>
-								</li>
-								<li>
-									<Link to='/register' className='btn btn-primary btn-sm'>
-										Inscription
-									</Link>
-								</li>
-							</>
-						)}
-						<li>
-							<DarkModeToggle />
-						</li>
-					</ul>
+						</ul>
+					)}
 				</div>
 			</div>
 

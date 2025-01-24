@@ -24,7 +24,7 @@ const DarkModeToggle = () => {
 	}
 
 	return (
-		<button onClick={toggleDarkMode} className='p-2  dark:bg-gray-800 rounded-full transition-transform duration-300 hover:rotate-12 active:scale-90' aria-label='Toggle Dark Mode'>
+		<button onClick={toggleDarkMode} className='p-2  dark:bg-gray-800 rounded-full lg:transition-transform duration-300 hover:rotate-12 sm:transition-none active:scale-90' aria-label='Toggle Dark Mode'>
 			{isDarkMode ? (
 				<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='w-6 h-6 text-yellow-400'>
 					<circle cx='12' cy='12' r='5' fill='currentColor' />
