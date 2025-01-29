@@ -62,6 +62,14 @@ const Login = () => {
 							</div>
 						</div>
 					)}
+
+					{isSubmitting && (
+						<div className={`alert alert-info`}>
+							<div>
+								<span>Merci de bien vouloir patienter, le serveur est lent au démarrage...</span>
+							</div>
+						</div>
+					)}
 					<Formik initialValues={{ email: '', password: '' }} validationSchema={validationSchema} onSubmit={handleSubmit}>
 						{({ isSubmitting }) => (
 							<Form>
