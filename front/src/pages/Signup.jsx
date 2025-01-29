@@ -101,9 +101,9 @@ const Signup = () => {
 						validationSchema={validationSchema}
 						onSubmit={handleSubmit}
 					>
-						{({ isSubmitting }) => (
-							(setIsSubmittingPop = isSubmitting),
-							(
+						{({ isSubmitting }) => {
+							setIsSubmittingPop(isSubmitting)
+							return (
 								<Form>
 									<h2 className='text-3xl font-bold mb-6 text-center'>Inscription</h2>
 
@@ -155,7 +155,7 @@ const Signup = () => {
 									</button>
 								</Form>
 							)
-						)}
+						}}
 					</Formik>
 
 					{/* Login Link */}
