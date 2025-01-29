@@ -73,7 +73,7 @@ const Login = () => {
 					)}
 					<Formik initialValues={{ email: '', password: '' }} validationSchema={validationSchema} onSubmit={handleSubmit}>
 						{({ isSubmitting }) => (
-							(isSubmittingPop = isSubmitting),
+							(setIsSubmittingPop = isSubmitting),
 							(
 								<Form>
 									<h2 className='text-3xl font-bold mb-6 text-center'>Connexion</h2>
