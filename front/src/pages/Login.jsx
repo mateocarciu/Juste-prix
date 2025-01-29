@@ -9,6 +9,7 @@ const Login = () => {
 	const navigate = useNavigate()
 	const [alertMessage, setAlertMessage] = useState('')
 	const [alertType, setAlertType] = useState('error')
+	const [isSubmittingPop, setIsSubmittingPop] = useState(false)
 
 	useEffect(() => {
 		if (user && user.token) {
@@ -63,7 +64,7 @@ const Login = () => {
 						</div>
 					)}
 
-					{isSubmitting && (
+					{isSubmittingPop && (
 						<div className={`alert alert-info`}>
 							<div>
 								<span>Merci de bien vouloir patienter, le serveur est lent au démarrage...</span>
@@ -72,26 +73,29 @@ const Login = () => {
 					)}
 					<Formik initialValues={{ email: '', password: '' }} validationSchema={validationSchema} onSubmit={handleSubmit}>
 						{({ isSubmitting }) => (
-							<Form>
-								<h2 className='text-3xl font-bold mb-6 text-center'>Connexion</h2>
+							(isSubmittingPop = isSubmitting),
+							(
+								<Form>
+									<h2 className='text-3xl font-bold mb-6 text-center'>Connexion</h2>
 
-								{/* Email Field */}
-								<div className='mb-4'>
-									<Field type='email' name='email' placeholder='Votre email' className='input input-bordered w-full' />
-									<ErrorMessage name='email' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
+									{/* Email Field */}
+									<div className='mb-4'>
+										<Field type='email' name='email' placeholder='Votre email' className='input input-bordered w-full' />
+										<ErrorMessage name='email' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
 
-								{/* Password Field */}
-								<div className='mb-6'>
-									<Field type='password' name='password' placeholder='Votre mot de passe' className='input input-bordered w-full' />
-									<ErrorMessage name='password' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
+									{/* Password Field */}
+									<div className='mb-6'>
+										<Field type='password' name='password' placeholder='Votre mot de passe' className='input input-bordered w-full' />
+										<ErrorMessage name='password' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
 
-								{/* Submit Button */}
-								<button type='submit' disabled={isSubmitting} className='btn btn-primary w-full text-lg py-2 mb-4'>
-									{isSubmitting ? 'Connexion en cours...' : 'Se connecter'}
-								</button>
-							</Form>
+									{/* Submit Button */}
+									<button type='submit' disabled={isSubmitting} className='btn btn-primary w-full text-lg py-2 mb-4'>
+										{isSubmitting ? 'Connexion en cours...' : 'Se connecter'}
+									</button>
+								</Form>
+							)
 						)}
 					</Formik>
 

@@ -9,6 +9,7 @@ const Signup = () => {
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 	const [showPopup, setShowPopup] = useState(false)
 	const [errorPopup, setErrorPopup] = useState(false)
+	const [isSubmittingPop, setIsSubmittingPop] = useState(false)
 
 	const validationSchema = Yup.object({
 		firstName: Yup.string().required('Le prénom est requis'),
@@ -81,7 +82,7 @@ const Signup = () => {
 						</div>
 					)}
 
-					{isSubmitting && (
+					{isSubmittingPop && (
 						<div className={`alert alert-info`}>
 							<div>
 								<span>Merci de bien vouloir patienter, le serveur est lent au démarrage...</span>
@@ -101,56 +102,59 @@ const Signup = () => {
 						onSubmit={handleSubmit}
 					>
 						{({ isSubmitting }) => (
-							<Form>
-								<h2 className='text-3xl font-bold mb-6 text-center'>Inscription</h2>
+							(isSubmittingPop = isSubmitting),
+							(
+								<Form>
+									<h2 className='text-3xl font-bold mb-6 text-center'>Inscription</h2>
 
-								{/* First Name */}
-								<div className='mb-4'>
-									<Field type='text' name='firstName' placeholder='Prénom' className='input input-bordered w-full' />
-									<ErrorMessage name='firstName' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
+									{/* First Name */}
+									<div className='mb-4'>
+										<Field type='text' name='firstName' placeholder='Prénom' className='input input-bordered w-full' />
+										<ErrorMessage name='firstName' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
 
-								{/* Last Name */}
-								<div className='mb-4'>
-									<Field type='text' name='lastName' placeholder='Nom' className='input input-bordered w-full' />
-									<ErrorMessage name='lastName' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
+									{/* Last Name */}
+									<div className='mb-4'>
+										<Field type='text' name='lastName' placeholder='Nom' className='input input-bordered w-full' />
+										<ErrorMessage name='lastName' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
 
-								{/* Email */}
-								<div className='mb-4'>
-									<Field type='email' name='email' placeholder='Email' className='input input-bordered w-full' />
-									<ErrorMessage name='email' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
+									{/* Email */}
+									<div className='mb-4'>
+										<Field type='email' name='email' placeholder='Email' className='input input-bordered w-full' />
+										<ErrorMessage name='email' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
 
-								{/* Username */}
-								<div className='mb-4'>
-									<Field type='text' name='username' placeholder="Nom d'utilisateur" className='input input-bordered w-full' />
-									<ErrorMessage name='username' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
+									{/* Username */}
+									<div className='mb-4'>
+										<Field type='text' name='username' placeholder="Nom d'utilisateur" className='input input-bordered w-full' />
+										<ErrorMessage name='username' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
 
-								{/* Password */}
-								<div className='mb-4 relative'>
-									<Field type={showPassword ? 'text' : 'password'} name='password' placeholder='Mot de passe' className='input input-bordered w-full' />
-									<button type='button' onClick={() => setShowPassword(!showPassword)} className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xl'>
-										{showPassword ? '👁' : '🙈'}
+									{/* Password */}
+									<div className='mb-4 relative'>
+										<Field type={showPassword ? 'text' : 'password'} name='password' placeholder='Mot de passe' className='input input-bordered w-full' />
+										<button type='button' onClick={() => setShowPassword(!showPassword)} className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xl'>
+											{showPassword ? '👁' : '🙈'}
+										</button>
+										<ErrorMessage name='password' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
+
+									{/* Confirm Password */}
+									<div className='mb-6 relative'>
+										<Field type={showConfirmPassword ? 'text' : 'password'} name='confirmPassword' placeholder='Confirmer le mot de passe' className='input input-bordered w-full' />
+										<button type='button' onClick={() => setShowConfirmPassword(!showConfirmPassword)} className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xl'>
+											{showConfirmPassword ? '👁' : '🙈'}
+										</button>
+										<ErrorMessage name='confirmPassword' component='div' className='text-red-500 text-sm mt-1' />
+									</div>
+
+									{/* Submit Button */}
+									<button type='submit' disabled={isSubmitting} className='btn btn-primary w-full text-lg py-2 mb-4'>
+										{isSubmitting ? 'Inscription en cours...' : "S'inscrire"}
 									</button>
-									<ErrorMessage name='password' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
-
-								{/* Confirm Password */}
-								<div className='mb-6 relative'>
-									<Field type={showConfirmPassword ? 'text' : 'password'} name='confirmPassword' placeholder='Confirmer le mot de passe' className='input input-bordered w-full' />
-									<button type='button' onClick={() => setShowConfirmPassword(!showConfirmPassword)} className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xl'>
-										{showConfirmPassword ? '👁' : '🙈'}
-									</button>
-									<ErrorMessage name='confirmPassword' component='div' className='text-red-500 text-sm mt-1' />
-								</div>
-
-								{/* Submit Button */}
-								<button type='submit' disabled={isSubmitting} className='btn btn-primary w-full text-lg py-2 mb-4'>
-									{isSubmitting ? 'Inscription en cours...' : "S'inscrire"}
-								</button>
-							</Form>
+								</Form>
+							)
 						)}
 					</Formik>
 
