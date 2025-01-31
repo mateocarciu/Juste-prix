@@ -25,6 +25,7 @@ const Dashboard = () => {
 			})
 
 			return () => {
+				newSocket.off('newGameCreated')
 				newSocket.close()
 			}
 		}
@@ -90,7 +91,6 @@ const Dashboard = () => {
 			const data = await response.json()
 			setGameId(data.gameId)
 			if (socket) {
-				socket.emit('joinGame', data.gameId, user.id)
 				socket.emit('fetchNewGames', user.id)
 				navigate(`/game/${data.gameId}`)
 			}
@@ -113,11 +113,7 @@ const Dashboard = () => {
 				const data = await response.json()
 				throw new Error(data.error || 'Erreur lors de la tentative de rejoindre la partie')
 			}
-			if (socket) {
-				socket.emit('joinGame', gameId, user.id)
-				socket.emit('fetchNewGames')
-				navigate(`/game/${gameId}`)
-			}
+			navigate(`/game/${gameId}`)
 		} catch (error) {
 			console.error('Erreur :', error)
 			alert(error.message)

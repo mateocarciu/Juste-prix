@@ -12,7 +12,9 @@ export default function setupSocket(server) {
 	const games = {}
 
 	io.on('connection', (socket) => {
-		console.log(`Nouvelle connexion : ${socket.id}`)
+		socket.on('fetchNewGames', async () => {
+			io.emit('newGameCreated')
+		})
 
 		socket.on('joinGame', (gameId, userId) => {
 			socket.join(gameId)
@@ -128,11 +130,6 @@ export default function setupSocket(server) {
 					message: 'Erreur lors du démarrage de la partie'
 				})
 			}
-		})
-
-		socket.on('fetchNewGames', async () => {
-			io.emit('newGameCreated')
-			console.log('Nouvelle partie créée')
 		})
 
 		socket.on('makeGuess', async (gameId, data) => {
