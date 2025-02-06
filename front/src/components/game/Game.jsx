@@ -179,7 +179,7 @@ const Game = () => {
 		<div className='w-full h-screen bg-base-200 flex flex-col items-center justify-center p-6'>
 			{/* Player joined Alert */}
 			{showPlayerJoinedAlert && (
-				<div className='alert alert-info'>
+				<div className='alert alert-info text-center w-1/4'>
 					<p>Un joueur a rejoint la partie, vous pouvez désormais la débuter !</p>
 				</div>
 			)}
