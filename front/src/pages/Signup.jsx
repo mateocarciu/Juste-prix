@@ -60,7 +60,7 @@ const Signup = () => {
 	}
 
 	return (
-		<div className='p-8 bg-base-200 text-base-content min-h-screen'>
+		<div className='p-8 bg-base-200 text-base-content'>
 			<div className='max-w-7xl mx-auto space-y-10'>
 				{/* Signup Form */}
 				<div className='max-w-md mx-auto bg-base-100 p-8 rounded-xl shadow-xl'>

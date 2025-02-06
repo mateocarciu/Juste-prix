@@ -124,7 +124,7 @@ const Dashboard = () => {
 		<div className='p-8 bg-base-200 text-base-content min-h-screen'>
 			<div className='max-w-7xl mx-auto space-y-10'>
 				<header className='text-center'>
-					<h1 className='text-4xl font-extrabold mb-2'>Bonjour, {user?.id}</h1>
+					<h1 className='text-4xl font-extrabold mb-2'>Bonjour, {user?.username}</h1>
 					<p className='text-gray-600 dark:text-gray-400'>Gérez vos parties ouvertes et découvrez les parties terminées.</p>
 				</header>
 
