@@ -1,34 +1,34 @@
 # Le Juste Prix
 
-Le Juste Prix est une application web de jeu où les utilisateurs doivent deviner le prix exact d'un objet affiché. Le projet est divisé en deux parties : une API backend développée avec Fastify et Sequelize, et une interface frontend développée avec Preact et Vite.
+Le Juste Prix is a web application game where users must guess the exact price of a displayed item. The project is divided into two parts: a backend API developed with Fastify and Sequelize, and a frontend interface developed with Preact and Vite.
 
-## Fonctionnalités
+## Features
 
-- **Inscription et Connexion** : Les utilisateurs peuvent s'inscrire et se connecter.
-- **Mode Sombre** : Les utilisateurs peuvent basculer entre le mode clair et le mode sombre.
-- **Création et Participation à des Jeux** : Les utilisateurs peuvent créer des jeux et y participer.
-- **Deviner le Prix** : Les utilisateurs doivent deviner le prix exact de l'objet affiché.
-- **Notifications en Temps Réel** : Les utilisateurs reçoivent des notifications en temps réel via Socket.IO.
+- **Sign Up and Login**: Users can sign up and log in.
+- **Dark Mode**: Users can toggle between light and dark modes.
+- **Game Creation and Participation**: Users can create games and participate in them.
+- **Guess the Price**: Users must guess the exact price of the displayed item.
+- **Real-Time Notifications**: Users receive real-time notifications via Socket.IO.
 
-## Technologies Utilisées
+## Technologies Used
 
-- **Backend** : Fastify, Sequelize, MySQL, Nodemailer, Socket.IO
-- **Frontend** : Preact, Vite, TailwindCSS, DaisyUI, Formik, Yup
+- **Backend**: Fastify, Sequelize, MySQL, Nodemailer, Socket.IO
+- **Frontend**: Preact, Vite, TailwindCSS, DaisyUI, Formik, Yup
 
 ## Installation
 
 ### Backend
 
-1. Clonez le dépôt.
-2. Accédez au répertoire `jdr-lotr-back`.
-3. Installez les dépendances :
+1. Clone the repository.
+2. Navigate to the `jdr-lotr-back` directory.
+3. Install dependencies:
 
    ```sh
    yarn install
    ```
 
-4. Créez un fichier `.env` en vous basant sur `.env.example` et configurez vos variables d'environnement.
-5. Démarrez le serveur de développement :
+4. Create a `.env` file based on `.env.example` and configure your environment variables.
+5. Start the development server:
 
    ```sh
    yarn dev
@@ -36,63 +36,16 @@ Le Juste Prix est une application web de jeu où les utilisateurs doivent devine
 
 ### Frontend
 
-1. Accédez au répertoire `front`.
-2. Installez les dépendances :
+1. Navigate to the `front` directory.
+2. Install dependencies:
 
    ```sh
    yarn install
    ```
 
-3. Créez un fichier `.env` en vous basant sur `.env.example` et configurez vos variables d'environnement.
-4. Démarrez le serveur de développement :
+3. Create a `.env` file based on `.env.example` and configure your environment variables.
+4. Start the development server:
 
    ```sh
    yarn dev
    ```
-
-## Structure du projet
-
-```
-├── front/
-│   ├── .env
-│   ├── .env.example
-│   ├── index.html
-│   ├── package.json
-│   ├── postcss.config.js
-│   ├── public/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── DarkmodeToggle.jsx
-│   │   │   ├── game/
-│   │   │   ├── layouts/
-│   │   │   ├── Navbar.jsx
-│   │   ├── context/
-│   │   │   ├── UserContext.jsx
-│   │   ├── index.css
-│   │   ├── main.jsx
-│   │   ├── pages/
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Signup.jsx
-│   │   │   ├── VerifyEmail.jsx
-│   ├── tailwind.config.js
-│   ├── vercel.json
-│   ├── vite.config.js
-├── jdr-lotr-back/
-│   ├── .env
-│   ├── .env.example
-│   ├── package.json
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── bdd.js
-│   │   ├── controllers/
-│   │   ├── mailer/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── server.js
-│   │   ├── socket/
-├── README.MD
-```
